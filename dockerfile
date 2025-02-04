@@ -13,6 +13,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy the application code
 COPY ./backend /app/backend
+
 # COPY ./frontend /app/frontend
 COPY ./features /app/features
 COPY ./services /app/services
@@ -21,4 +22,4 @@ COPY ./services /app/services
 ENV API_PORT=8080
 
 # Command to run the application
-CMD ["uvicorn", "backend.app.main:app", "--host", "0.0.0.0", "--port", "8080"]
+CMD ["uvicorn", "backend.api.main:app", "--host", "0.0.0.0", "--port", "8080"]
