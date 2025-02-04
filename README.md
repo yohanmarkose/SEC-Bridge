@@ -1,2 +1,3 @@
-# DAMG7245_Assignment02
+# Financial Statement Database
+
 DAMG7245 Assignment 2
