@@ -1,0 +1,6 @@
+/__pycache__/
+venv/
+output.log
+*.env
+*.pyc
+*.pyo% 
