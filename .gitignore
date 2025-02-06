@@ -4,3 +4,8 @@ output.log
 *.env
 *.pyc
 *.pyo% 
+
+
+docker-compose.yaml
+logs
+plugins
