@@ -5,7 +5,7 @@ from io import BytesIO
 from zipfile import ZipFile
 
 
-def scrape_sec_data(year, quarter, base_path):
+def scrape_sec_data(year, quarter):
     """
     Downloads and extracts SEC financial statement data for a given year and quarter.
     
@@ -33,15 +33,16 @@ def scrape_sec_data(year, quarter, base_path):
     try:
         response = requests.get(url, headers=headers)
         response.raise_for_status()  
-        os.makedirs(base_path, exist_ok=True)
+        #os.makedirs(base_path, exist_ok=True)
 
         # Create a temporary directory to extract files
+        temp_dir="./data"
         with ZipFile(BytesIO(response.content)) as zip_file:
-                zip_file.extractall(base_path)
+                zip_file.extractall(temp_dir)
 
                 # Collect all extracted file paths
                 extracted_files = []
-                for root, _, files in os.walk(base_path):
+                for root, _, files in os.walk(temp_dir):
                     for file in files:
                         extracted_files.append(os.path.join(root, file))
 
@@ -56,11 +57,8 @@ def scrape_sec_data(year, quarter, base_path):
     except Exception as e:
         raise Exception(f"Failed to process SEC data: {e}")
 
-
-# Example usage for testing (remove this block when integrating with Airflow)
 if __name__ == "__main__":
     year = 2024
     quarter = 2
-    base_path = f"DAMG7245_Assignment02/data/{year}/{quarter}"
-    files = scrape_sec_data(year, quarter, base_path)
+    files = scrape_sec_data(year, quarter)
     print(f"Extracted files: {files}")
