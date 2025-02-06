@@ -24,9 +24,11 @@ with DAG(
 ) as dag:
 
     def run_scraper_and_transform(**kwargs):
-        year = kwargs['year']
-        quarter = kwargs['quarter']
+        # year = kwargs['year']
+        # quarter = kwargs['quarter']
         #base_path = f"/tmp/DAMG7245_Assignment02/data/{year}/{quarter}"  # Save locally in /tmp
+        year = kwargs['dag_run'].conf.get('year')
+        quarter = kwargs['dag_run'].conf.get('quarter')
         extracted_files = scrape_sec_data(year, quarter)
         
         transformed_files = []
@@ -61,7 +63,7 @@ with DAG(
     scrape_and_transform_task = PythonOperator(
         task_id='scrape_transform_and_upload_sec_data',
         python_callable=run_scraper_and_transform,
-        op_kwargs={'year': 2024, 'quarter': 3},
+        #op_kwargs={'year': 2024, 'quarter': 3},
         provide_context=True,
     )
 
