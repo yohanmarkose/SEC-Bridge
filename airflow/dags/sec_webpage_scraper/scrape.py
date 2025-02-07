@@ -1,9 +1,29 @@
 import os
 import requests
-import tempfile
+from tempfile import NamedTemporaryFile
 from io import BytesIO
 from zipfile import ZipFile
 
+def extract_zip_to_bytes(response):
+    # Create a temporary file to store the ZIP content
+    with NamedTemporaryFile() as temp_zip_file:
+        # Write the response content to the temporary ZIP file
+        temp_zip_file.write(response.content)
+        temp_zip_file.seek(0)  # Reset file pointer to the beginning
+
+        # Open the ZIP file and extract its contents
+        with ZipFile(temp_zip_file, 'r') as zip_file:
+            extracted_files = []
+            
+            for file_name in zip_file.namelist():
+                # Read each file in the ZIP as a byte stream
+                with zip_file.open(file_name) as file:
+                    extracted_files.append((file_name, BytesIO(file.read())))
+            
+            if not extracted_files:
+                raise Exception("No files were extracted from the ZIP archive.")
+            
+            return extracted_files
 
 def scrape_sec_data(year, quarter):
     """
@@ -34,23 +54,8 @@ def scrape_sec_data(year, quarter):
         response = requests.get(url, headers=headers)
         response.raise_for_status()  
         #os.makedirs(base_path, exist_ok=True)
-
-        # Create a temporary directory to extract files
-        temp_dir="./data"
-        with ZipFile(BytesIO(response.content)) as zip_file:
-                zip_file.extractall(temp_dir)
-
-                # Collect all extracted file paths
-                extracted_files = []
-                for root, _, files in os.walk(temp_dir):
-                    for file in files:
-                        extracted_files.append(os.path.join(root, file))
-
-                if not extracted_files:
-                    raise Exception("No files were extracted from the ZIP archive.")
-
-                print(f"Extracted files: {extracted_files}")
-                return extracted_files
+        
+        return extract_zip_to_bytes(response)
 
     except requests.exceptions.RequestException as e:
         raise Exception(f"Failed to download SEC data: {e}")
