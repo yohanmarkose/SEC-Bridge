@@ -14,7 +14,7 @@ sql_commands = ["""use role accountadmin;""",
                                 AWS_SECRET_KEY = 'sE6Bupmmbmxo5boOvSQedcNJVsFdsstQ0FO151mX');""",
                 """CREATE OR REPLACE FILE FORMAT my_csv_format
                 TYPE = CSV
-                FIELD_OPTIONALLY_ENCLOSED_BY='"'  -- Handles strings with commas
+                FIELD_OPTIONALLY_ENCLOSED_BY='"'
                 NULL_IF = ('', 'NULL')
                 PARSE_HEADER = TRUE;""",
 
@@ -58,8 +58,8 @@ sql_commands = ["""use role accountadmin;""",
                 );""",
                 """CREATE OR REPLACE TABLE raw_num (
                     adsh VARCHAR PRIMARY KEY,
-                    "tag" VARCHAR,
-                    "version" VARCHAR,
+                    tag VARCHAR,
+                    version VARCHAR,
                     ddate VARCHAR,
                     qtrs VARCHAR,
                     uom VARCHAR,
@@ -69,8 +69,8 @@ sql_commands = ["""use role accountadmin;""",
                     footnote VARCHAR
                 );""",
                 """CREATE OR REPLACE TABLE raw_tag (
-                    "tag" VARCHAR,
-                    "version" VARCHAR,
+                    tag VARCHAR,
+                    version VARCHAR,
                     custom VARCHAR,
                     abstract VARCHAR,
                     datatype VARCHAR,
@@ -86,8 +86,8 @@ sql_commands = ["""use role accountadmin;""",
                     stmt VARCHAR,
                     inpth VARCHAR,
                     rfile VARCHAR,
-                    "tag" VARCHAR,
-                    "version" VARCHAR,
+                    tag VARCHAR,
+                    version VARCHAR,
                     plabel VARCHAR,
                     negating VARCHAR
                 );""",
