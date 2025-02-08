@@ -4,6 +4,7 @@ from airflow import DAG
 from airflow.operators.python import PythonOperator
 from airflow.providers.amazon.aws.hooks.s3 import S3Hook
 from datetime import datetime
+from sec_webpage_scraper.convert_to_parquet import parquet_transformer
 from sec_webpage_scraper.scrape import scrape_sec_data
 from sec_webpage_scraper.convert_to_csv import csv_transformer  
 import pandas as pd
@@ -25,23 +26,22 @@ with DAG(
 ) as dag:
 
     def run_scraper_and_transform(**kwargs):
-        # year = kwargs['year']
-        # quarter = kwargs['quarter']
-        #base_path = f"/tmp/DAMG7245_Assignment02/data/{year}/{quarter}"  # Save locally in /tmp
         year = kwargs['dag_run'].conf.get('year')
         quarter = kwargs['dag_run'].conf.get('quarter')
         extracted_files = scrape_sec_data(year, quarter)
         
-        transformed_files = csv_transformer(extracted_files, year, quarter)
-
-            # s3_hook.load_file_obj(file_obj=file_bytes, bucket_name=bucket_name, key=s3_key, replace=True)
+        csv_transformed_files = csv_transformer(extracted_files, year, quarter)
+        parquet_transformed_files = parquet_transformer(extracted_files, year, quarter)
         
-        # Upload transformed .csv files to S3
+        all_transformed_files = csv_transformed_files + parquet_transformed_files
+        
+        # Upload transformed files to S3
         s3_hook = S3Hook(aws_conn_id='aws_default')
         bucket_name = Variable.get("s3_bucket_name")
-        s3_key_base = f"data/{year}/{quarter}/csv"
         
-        for file_name, file_bytes in transformed_files:
+        for file_name, file_bytes in all_transformed_files:
+            file_type = file_name.split(".")[1]
+            s3_key_base = f"data/{year}/{quarter}/{file_type}"
             s3_key = f"{s3_key_base}/{file_name}"
             s3_hook.load_file_obj(file_obj=file_bytes, bucket_name=bucket_name, key=s3_key, replace=True)
             print(f"Uploaded {file_name} to S3 at {s3_key}")
