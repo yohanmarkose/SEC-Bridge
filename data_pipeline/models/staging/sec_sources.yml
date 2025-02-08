@@ -1,0 +1,30 @@
+version: 2
+
+sources:
+  - name: sec_source
+    database: dbt_db
+    schema: dbt_schema
+    tables:
+      - name: raw_sub
+        description: Raw data from SEC sub file
+        columns:
+          - name: adsh
+            tests:
+              - unique
+              - not_null
+      - name: raw_num
+        description: Raw data from SEC num file
+        columns:
+          - name: adsh
+            tests:
+              - unique
+              - not_null
+      - name: raw_pre
+        description: Raw data from SEC pre file
+        columns:
+          - name: adsh
+            tests:
+              - unique
+              - not_null
+      - name: raw_tag
+        description: Raw data from SEC tag file
