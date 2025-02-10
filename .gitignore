@@ -8,8 +8,6 @@ output.log
 *.txt
 *.DS_Store
 readme.htm
-
-
 docker-compose.yaml
 logs
 plugins
