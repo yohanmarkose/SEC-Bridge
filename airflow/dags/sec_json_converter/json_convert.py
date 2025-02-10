@@ -8,15 +8,16 @@ import json
 
 # Constants
 dirname = "data/2024/2"
+dirname = "data/2024/2"
 
 # Load DataFrames
-def load_data():
+def load_data(base_path, year, quarter):
     return {
-        "num": pd.read_table(f"{dirname}/num.txt", delimiter="\t", low_memory=False),
-        "pre": pd.read_table(f"{dirname}/pre.txt", delimiter="\t", low_memory=False),
-        "sub": pd.read_table(f"{dirname}/sub.txt", delimiter="\t", low_memory=False),
-        "tag": pd.read_table(f"{dirname}/tag.txt", delimiter="\t", low_memory=False),
-        "sym": pd.read_table(f"{dirname}/ticker.txt", delimiter="\t", header=None, names=['symbol', 'cik'], low_memory=False)
+        "num": pd.read_table(f"{base_path}/num.txt", delimiter="\t", low_memory=False),
+        "pre": pd.read_table(f"{base_path}/pre.txt", delimiter="\t", low_memory=False),
+        "sub": pd.read_table(f"{base_path}/sub.txt", delimiter="\t", low_memory=False),
+        "tag": pd.read_table(f"{base_path}/tag.txt", delimiter="\t", low_memory=False),
+        "sym": pd.read_table(f"{base_path}/ticker.txt", delimiter="\t", header=None, names=['symbol', 'cik'], low_memory=False)
     }
 
 # Utility Functions
