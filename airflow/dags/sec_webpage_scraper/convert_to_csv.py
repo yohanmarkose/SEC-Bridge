@@ -48,3 +48,4 @@ def csv_transformer(extracted_files, year, quarter):
     transformed_files.append(("ticker.csv", convert_to_bytes(data_frame)))
     
     return transformed_files    
+
