@@ -6,25 +6,25 @@ sources:
     schema: dbt_schema
     tables:
       - name: raw_sub
-        description: Raw data from SEC sub file
+        description: Raw data from SEC submission file
         columns:
           - name: adsh
             tests:
               - unique
               - not_null
       - name: raw_num
-        description: Raw data from SEC num file
+        description: Raw data from SEC numeric financial data file
         columns:
           - name: adsh
             tests:
               - unique
               - not_null
       - name: raw_pre
-        description: Raw data from SEC pre file
+        description: Raw data from SEC presentation file
         columns:
           - name: adsh
             tests:
               - unique
               - not_null
       - name: raw_tag
-        description: Raw data from SEC tag file
+        description: Raw data from SEC financial tags file
