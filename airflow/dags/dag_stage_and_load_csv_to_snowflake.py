@@ -54,7 +54,9 @@ with DAG(
             FIELD_OPTIONALLY_ENCLOSED_BY='"'
             NULL_IF = ('', 'NULL')
             PARSE_HEADER = TRUE
-            DATE_FORMAT = 'YYYYMMDD';
+            DATE_FORMAT = 'YYYYMMDD'
+            EMPTY_FIELD_AS_NULL = TRUE
+            TRIM_SPACE = TRUE;
         """
     )
 
@@ -125,7 +127,8 @@ with DAG(
             COPY INTO sub_{year}_{quarter}_csv
             FROM @sec_s3_stage_csv/data/{year}/{quarter}/csv/sub.csv
             FILE_FORMAT = (FORMAT_NAME = csv_fileformat)
-            MATCH_BY_COLUMN_NAME = CASE_INSENSITIVE;
+            MATCH_BY_COLUMN_NAME = CASE_INSENSITIVE
+            ON_ERROR = 'CONTINUE';
         """
 
     generate_copy_sub = PythonOperator(
@@ -181,7 +184,8 @@ with DAG(
             COPY INTO num_{year}_{quarter}_csv
             FROM @sec_s3_stage_csv/data/{year}/{quarter}/csv/num.csv
             FILE_FORMAT = (FORMAT_NAME = csv_fileformat)
-            MATCH_BY_COLUMN_NAME = CASE_INSENSITIVE;
+            MATCH_BY_COLUMN_NAME = CASE_INSENSITIVE
+            ON_ERROR = 'CONTINUE';
         """
 
     generate_copy_num = PythonOperator(
@@ -237,7 +241,8 @@ with DAG(
             COPY INTO tag_{year}_{quarter}_csv
             FROM @sec_s3_stage_csv/data/{year}/{quarter}/csv/tag.csv
             FILE_FORMAT = (FORMAT_NAME = csv_fileformat)
-            MATCH_BY_COLUMN_NAME = CASE_INSENSITIVE;
+            MATCH_BY_COLUMN_NAME = CASE_INSENSITIVE
+            ON_ERROR = 'CONTINUE';
         """
 
     generate_copy_sql_tag = PythonOperator(
@@ -294,7 +299,8 @@ with DAG(
             COPY INTO pre_{year}_{quarter}_csv
             FROM @sec_s3_stage_csv/data/{year}/{quarter}/csv/pre.csv
             FILE_FORMAT = (FORMAT_NAME = csv_fileformat)
-            MATCH_BY_COLUMN_NAME = CASE_INSENSITIVE;
+            MATCH_BY_COLUMN_NAME = CASE_INSENSITIVE
+            ON_ERROR = 'CONTINUE';
         """
 
     generate_copy_sql_pre = PythonOperator(
