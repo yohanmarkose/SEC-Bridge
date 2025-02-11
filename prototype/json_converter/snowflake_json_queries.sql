@@ -1,11 +1,24 @@
 USE ROLE ACCOUNTADMIN;
 
-CREATE OR REPLACE WAREHOUSE COMPUTE_JSON_WH with WAREHOUSE_SIZE='x-small';
-USE WAREHOUSE COMPUTE_JSON_WH;
+// Warehouse
+CREATE WAREHOUSE IF NOT EXISTS dbt_wh with WAREHOUSE_SIZE='x-small';
+USE WAREHOUSE dbt_wh;
 
-CREATE OR REPLACE DATABASE JSON_DB;
-USE DATABASE JSON_DB;
-USE SCHEMA PUBLIC;
+// Database
+CREATE DATABASE IF NOT EXISTS dbt_db;
+USE DATABASE dbt_db;
+
+//Role
+CREATE ROLE IF NOT EXISTS dbt_role;
+GRANT ROLE dbt_role TO USER vedantmane;
+
+GRANT USAGE ON WAREHOUSE dbt_wh TO ROLE dbt_role;
+GRANT ALL ON DATABASE dbt_db TO ROLE dbt_role;
+ 
+USE ROLE dbt_role;
+
+CREATE SCHEMA IF NOT EXISTS dbt_db.dbt_schema;
+USE SCHEMA dbt_schema;
 
 // Creating JSON File Format
 CREATE OR REPLACE FILE FORMAT sec_json_format
@@ -14,26 +27,26 @@ TYPE = 'JSON';
 
 // CREATE JSON Stage on Snowflake from S3
 CREATE OR REPLACE STAGE sec_json_stage
-URL = 's3://bucketcompletebath'
-CREDENTIALS = (AWS_KEY_ID = 'AWS_KEY_ID'
-                AWS_SECRET_KEY = 'AWS_SECRET_KEY')
+URL = 's3://secdatafiles/data/2024/1/json/'
+CREDENTIALS = (AWS_KEY_ID = 'AKIA4SZHNTVUXP4OX3VV'
+                AWS_SECRET_KEY = 'sE6Bupmmbmxo5boOvSQedcNJVsFdsstQ0FO151mX')
 FILE_FORMAT = sec_json_format;
 //STORAGE_INTEGRATION = your_storage_integration_name -- Optional: Use if private bucket
 
 //CREATE Table for JSON Files
-CREATE OR REPLACE TABLE sec_json_table (
+CREATE OR REPLACE TABLE SEC_JSON_2024_Q1 (
     json_data VARIANT
 );
 
 //INSERT JSON Data into Table
-COPY INTO sec_json_table
+COPY INTO SEC_JSON_2024_Q1
 FROM @sec_json_stage
 FILE_FORMAT = (FORMAT_NAME = sec_json_format)
 PATTERN = '.*\.json'; -- Matches all files with .json extension
 
-SELECT * FROM sec_json_table LIMIT 10;
+SELECT * FROM SEC_JSON_2024_Q1 LIMIT 10;
 
-SELECT COUNT(*) FROM sec_json_table;
+SELECT COUNT(*) FROM SEC_JSON_2024_Q1;
 
 // CREATE a VIEW for METADATA from JSON Files
 CREATE OR REPLACE VIEW metadata_view AS
@@ -46,11 +59,11 @@ SELECT
     json_data:symbol::STRING AS symbol,
     json_data:startDate::DATE AS start_date,
     json_data:endDate::DATE AS end_date
-FROM sec_json_table;
+FROM SEC_JSON_2024_Q1;
 
 SELECT * FROM METADATA_VIEW LIMIT 10;
 
-CREATE OR REPLACE VIEW balance_sheet_view AS
+CREATE OR REPLACE VIEW JSON_BS_2024_Q1 AS
 SELECT 
     t.json_data:year::NUMBER AS year,
     t.json_data:quarter::STRING AS quarter,
@@ -64,12 +77,12 @@ SELECT
     bs.value:label::STRING AS label,
     bs.value:unit::STRING AS unit,
     bs.value:value::NUMBER AS value
-FROM sec_json_table t, 
+FROM SEC_JSON_2024_Q1 t, 
      LATERAL FLATTEN(input => t.json_data:data.bs) bs;
 
-SELECT * FROM balance_sheet_view;
+SELECT * FROM JSON_BS_2024_Q1;
 
-CREATE OR REPLACE VIEW cash_flow_view AS
+CREATE OR REPLACE VIEW JSON_CF_2024_Q1 AS
 SELECT 
     t.json_data:year::NUMBER AS year,
     t.json_data:quarter::STRING AS quarter,
@@ -83,12 +96,12 @@ SELECT
     cf.value:label::STRING AS label,
     cf.value:unit::STRING AS unit,
     cf.value:value::NUMBER AS value
-FROM sec_json_table t, 
+FROM SEC_JSON_2024_Q1 t, 
      LATERAL FLATTEN(input => t.json_data:data.cf) cf;
 
-SELECT * FROM cash_flow_view;
+SELECT * FROM JSON_CF_2024_Q1;
 
-CREATE OR REPLACE VIEW income_statement_view AS
+CREATE OR REPLACE VIEW JSON_IS_2024_Q1 AS
 SELECT 
     t.json_data:year::NUMBER AS year,
     t.json_data:quarter::STRING AS quarter,
@@ -102,19 +115,18 @@ SELECT
     ic.value:label::STRING AS label,
     ic.value:unit::STRING AS unit,
     ic.value:value::NUMBER AS value
-FROM sec_json_table t, 
+FROM SEC_JSON_2024_Q1 t, 
      LATERAL FLATTEN(input => t.json_data:data.ic) ic;
 
-SELECT * FROM income_statement_view;
+SELECT * FROM JSON_IS_2024_Q1;
 
-CREATE OR REPLACE VIEW combined_financial_view AS
-SELECT *, 'Balance Sheet' AS section_type FROM balance_sheet_view
+CREATE OR REPLACE VIEW JSON_FV_2024_Q1 AS
+SELECT *, 'Balance Sheet' AS section_type FROM JSON_BS_2024_Q1
 UNION ALL
-SELECT *, 'Cash Flow' FROM cash_flow_view
+SELECT *, 'Cash Flow' AS section_type FROM JSON_CF_2024_Q1
 UNION ALL
-SELECT *, 'Income Statement' FROM income_statement_view;
+SELECT *, 'Income Statement' AS section_type FROM JSON_IS_2024_Q1;
 
-SELECT * FROM combined_financial_view;
+SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA='DBT_SCHEMA' AND TABLE_NAME = 'SEC_JSON_2024_Q1';
 
-SELECT section_type,COUNT(*) FROM combined_financial_view GROUP BY section_type;
-
+SELECT section_type,COUNT(*) FROM JSON_FV_2024_Q1 GROUP BY section_type;
