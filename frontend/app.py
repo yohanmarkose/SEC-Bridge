@@ -7,6 +7,8 @@ load_dotenv()
 # Airflow API endpoint
 AIRFLOW_API_URL = "http://localhost:8080/api/v1/dags/sec_data_to_s3/dagRuns"
 
+QUERY_API_URL = "http://localhost:8000"
+
 # st.title("US Securities & Exchange Commission - Data Bridge")
 
 
@@ -91,19 +93,56 @@ def populate_query_page():
             if st.session_state.query is not None:  # Ensure the query is not empty
                 # Execute the query
                 query_executed = execute_query(st.session_state.query)
-                st.success(f"Query executed successfully for Year: {year}, Quarter: {quarter}.")
+                st.write("Query Results:")
+                st.dataframe(query_executed)
+                st.success(f"Query executed successfully.")
             else:
                 st.error("Please enter a valid query before running.")
             # Additional user guidance when no action is taken yet
         
 def check_data_availability(source, year, quarter):
     # Placeholder function to check data availability
+    try:
+        response = requests.get(f"{QUERY_API_URL}/check-availability", params={"source": source}) 
+        # Check if the request was successful
+        if response.status_code == 200:
+            data = response.json().get("data", [])
+                # Display the data in a table format if results are available
+            if data:
+                return(data)
+            else:
+                st.write("No data returned for the given query.")
+        else:
+            # Handle errors from the API
+            st.error(f"Error: {response.status_code} - {response.text}")
+    except Exception as e:
+        # Handle connection or other exceptions
+        st.error(f"An error occurred: {e}")
+        
     return(True)
     
 def execute_query(query):
-    print(query)
-    return(True)
-    
+    if query.strip():  # Ensure the query is not empty
+        try:
+            # Send the query to the FastAPI backend
+            response = requests.get(f"{QUERY_API_URL}/query-data", params={"query": query})            
+            # Check if the request was successful
+            if response.status_code == 200:
+                data = response.json().get("data", [])
+                # Display the data in a table format if results are available
+                if data:
+                    return(data)
+                else:
+                    st.write("No data returned for the given query.")
+            else:
+                # Handle errors from the API
+                st.error(f"Error: {response.status_code} - {response.text}")
+        except Exception as e:
+            # Handle connection or other exceptions
+            st.error(f"An error occurred: {e}")
+    else:
+        st.warning("Please enter a valid SQL query.")
+
 def main():
     # Set the title of the app
     st.title("US Securities and Exchange Commission")
@@ -122,7 +161,7 @@ def main():
         )
     # Display content based on selection
     if selected == "Airflow":
-        st.subheader("Welcome to the Airflow Page")
+        populate_airflow_page()
     elif selected == "Query Snowflake":
         populate_query_page()
             
