@@ -25,7 +25,7 @@ if st.button("Fetch Data"):
             "quarter": quarter
         }
     }
-    dag_id = "sec_data_to_s3"
+    dag_id = "sec_data_to_s3_scraper"
     AIRFLOW_API_URL = f"http://localhost:8080/api/v1/dags/{dag_id}/dagRuns"
 
     # Trigger the DAG via Airflow REST API
