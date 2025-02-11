@@ -4,8 +4,10 @@ output.log
 *.env
 *.pyc
 *.pyo% 
-
-
+*.json
+*.txt
+*.DS_Store
+readme.htm
 docker-compose.yaml
 logs
 plugins

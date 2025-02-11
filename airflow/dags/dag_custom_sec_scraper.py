@@ -5,6 +5,7 @@ from airflow.operators.python import PythonOperator
 from airflow.providers.amazon.aws.hooks.s3 import S3Hook
 from datetime import datetime
 from sec_webpage_scraper.scrape import scrape_sec_data
+from sec_webpage_scraper.convert_to_csv import csv_transformer  
 import pandas as pd
 
 default_args = {
@@ -31,34 +32,20 @@ with DAG(
         quarter = kwargs['dag_run'].conf.get('quarter')
         extracted_files = scrape_sec_data(year, quarter)
         
-        transformed_files = []
-        
-        # Transform .txt files to .csv
-        for file_path in extracted_files:
-            file_name = os.path.basename(file_path)
-            if file_name.endswith('.txt'):
-                csv_file_path = os.path.splitext(file_path)[0] + '.csv'  # Change extension to .csv
-                
-                # Transform .txt to .csv using pandas
-                try:
-                    df_load = pd.read_table(file_path, delimiter="\t", low_memory=False)
-                    df_load["year"] = year
-                    df_load["quarter"] = quarter
-                    df_load.to_csv(csv_file_path, index=False)
-                    transformed_files.append(csv_file_path)
-                    print(f"Transformed {file_name} to {csv_file_path}")
-                except Exception as e:
-                    print(f"Failed to transform {file_name}: {e}")
+        transformed_files = csv_transformer(extracted_files, year, quarter)
 
+            # s3_hook.load_file_obj(file_obj=file_bytes, bucket_name=bucket_name, key=s3_key, replace=True)
+        
         # Upload transformed .csv files to S3
         s3_hook = S3Hook(aws_conn_id='aws_default')
         bucket_name = Variable.get("s3_bucket_name")
+        s3_key_base = f"data/{year}/{quarter}/csv"
         
-        for csv_file_path in transformed_files:
-            csv_file_name = os.path.basename(csv_file_path)
-            s3_key = f"DAMG7245_Assignment02/data/{year}/{quarter}/{csv_file_name}"
-            s3_hook.load_file(filename=csv_file_path, bucket_name=bucket_name, key=s3_key, replace=True)
-            print(f"Uploaded {csv_file_name} to S3 at {s3_key}")
+        for file_name, file_bytes in transformed_files:
+            s3_key = f"{s3_key_base}/{file_name}"
+            s3_hook.load_file_obj(file_obj=file_bytes, bucket_name=bucket_name, key=s3_key, replace=True)
+            print(f"Uploaded {file_name} to S3 at {s3_key}")
+        
 
     scrape_and_transform_task = PythonOperator(
         task_id='scrape_transform_and_upload_sec_data',
