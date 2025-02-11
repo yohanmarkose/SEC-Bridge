@@ -10,3 +10,5 @@ datetime
 pydantic
 pathlib
 logging
+apache-airflow
+apache-airflow-providers-snowflake
