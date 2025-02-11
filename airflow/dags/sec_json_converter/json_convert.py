@@ -14,7 +14,7 @@ def load_data(files):
     for file_name, file_buffer in files:
         try:
             # Read the CSV file into a DataFrame
-            df = pd.read_csv(file_buffer)
+            df = pd.read_csv(file_buffer, low_memory=False)
             # Use only the base name of the file as the key
             base_name = file_name.split('/')[-1].split('.')[0]
             dataframes[base_name] = df
