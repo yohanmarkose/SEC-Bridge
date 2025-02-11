@@ -1,5 +1,6 @@
 import pandas as pd
 from io import BytesIO
+from io import StringIO
 
 def get_ticker_file():
     import pandas as pd
@@ -11,7 +12,6 @@ def get_ticker_file():
     response = requests.get(url, headers=headers)
     if response.status_code == 200:
         # Save content to a DataFrame
-        from io import StringIO
         data_frame = pd.read_table(StringIO(response.text), delimiter="\t", header=None, names=["symbol", "cik"])
     else:
         print(f"Failed to fetch data: {response.status_code}")
