@@ -29,8 +29,10 @@ with DAG(
 ) as dag:
 
     def run_scraper_and_transform(**kwargs):
+        source = kwargs['dag_run'].conf.get('source')
+        print(source)
         year = kwargs['dag_run'].conf.get('year')
-        quarter = kwargs['dag_run'].conf.get('quarter')
+        quarter = kwargs['dag_run'].conf.get('quarter').split("Q")[1]
 
         extracted_files = scrape_sec_data(year, quarter)
         csv_transformed_files = csv_transformer(extracted_files, year, quarter)

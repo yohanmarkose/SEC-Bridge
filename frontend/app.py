@@ -5,40 +5,9 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # Airflow API endpoint
-AIRFLOW_API_URL = "http://localhost:8080/api/v1/dags/sec_data_to_s3/dagRuns"
+AIRFLOW_API_URL = "http://localhost:8080"
 
 QUERY_API_URL = "http://localhost:8000"
-
-# st.title("US Securities & Exchange Commission - Data Bridge")
-
-
-# # Input fields for year and quarter
-# year = st.selectbox("Select Year",("2024","2023","2022","2021","2020","2019","2018","2017"))
-# quarter = st.selectbox("Select Quarter", ("1","2","3","4"))
-
-# if st.button("Fetch Data"):
-#     # Payload for triggering the DAG
-#     payload = {
-#         "conf": {
-#             "year": year,
-#             "quarter": quarter
-#         }
-#     }
-    
-#     AIRFLOW_USER = os.getenv("AIRFLOW_USER")
-#     AIRFLOW_PASSCODE = os.getenv("AIRFLOW_PASSCODE")
-
-#     # Trigger the DAG via Airflow REST API
-#     response = requests.post(
-#         AIRFLOW_API_URL,
-#         json=payload,
-#         auth=(f"{AIRFLOW_USER}", f"{AIRFLOW_PASSCODE}")
-#     )
-
-#     if response.status_code == 200:
-#         st.success("DAG triggered successfully!")
-#     else:
-#         st.error(f"Failed to trigger DAG: {response.text}")
 
 def populate_airflow_page():
     # Display the airflow page
@@ -51,6 +20,26 @@ def populate_airflow_page():
         year = st.selectbox("Select Year", range(2009, 2025))
     with col3:
         quarter = st.selectbox("Select Quarter", ("Q1","Q2","Q3","Q4"))
+    trigger = st.button("Trigger Airflow DAG", use_container_width=True)
+    if trigger:
+        # Payload for triggering the DAG
+        payload = {
+            "conf": {
+                "source": source,
+                "year": year,
+                "quarter": quarter
+            }
+        }
+        # Trigger the DAG via Airflow REST API
+        response = requests.post(
+            f"{AIRFLOW_API_URL}/api/v1/dags/sec_data_to_s3_scraper/dagRuns",
+            json=payload,
+            auth=(f"{os.getenv('AIRFLOW_USER')}", f"{os.getenv('AIRFLOW_PASSCODE')}")
+        )
+        if response.status_code == 200:
+            st.success("DAG triggered successfully!")
+        else:
+            st.error(f"Failed to trigger DAG: {response.text}")
     
 def populate_query_page():
     # Display the query page
