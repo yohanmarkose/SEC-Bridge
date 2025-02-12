@@ -32,7 +32,7 @@ def populate_airflow_page():
         }
         # Trigger the DAG via Airflow REST API
         response = requests.post(
-            f"{AIRFLOW_API_URL}/api/v1/dags/sec_data_to_s3_scraper/dagRuns",
+            f"{AIRFLOW_API_URL}/api/v1/dags/sec_raw_data_to_snowflake/dagRuns",
             json=payload,
             auth=(f"{os.getenv('AIRFLOW_USER')}", f"{os.getenv('AIRFLOW_PASSCODE')}")
         )
