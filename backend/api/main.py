@@ -45,21 +45,25 @@ def check_data_in_snowflake():
 app = FastAPI()
 
 @app.get("/check-availability")
-def check_data_availability(params: input_params):
+def check_data_availability(query: str = Query(..., description="SQL query to execute")):
     """
-    Placeholder function to check data availability.
+    Endpoint to check data availability on Snowflake.
     """
-    # Placeholder function to check data availability
-    engine = check_data_in_snowflake()
-    if params.source == 'JSON':
-        query: str = Query(f"SELECT COUNT(*) AS record_count FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA='{os.get('SNOWFLAKE_SCHEMA')}' AND TABLE_NAME = 'SEC_JSON_TABLE';")
+    try:
+        # Validate and sanitize the query (use parameterized queries if possible)
+        engine = check_data_in_snowflake()
+
+        # Execute query using a context manager for session handling
         with engine.connect() as connection:
             result = connection.execute(query).fetchall()
+        
         # Convert result rows into a list of dictionaries
-        print(result)
         data = [dict(row) for row in result]
         return {"data": data}
-    return {"data": None}
+
+    except Exception as e:
+        # Handle errors and return meaningful messages
+        raise HTTPException(status_code=500, detail=f"An error occurred: {str(e)}")
 
 
 @app.get("/query-data")
