@@ -60,7 +60,7 @@ x-airflow-common:
     AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION: 'true'
     AIRFLOW__CORE__LOAD_EXAMPLES: 'true'
     AIRFLOW__API__AUTH_BACKENDS: 'airflow.api.auth.backend.basic_auth,airflow.api.auth.backend.session'
-    _PIP_ADDITIONAL_REQUIREMENTS: "apache-airflow-providers-snowflake boto3 dbt-core dbt-snowflake"
+    _PIP_ADDITIONAL_REQUIREMENTS: "apache-airflow-providers-snowflake boto3 dbt-core dbt-snowflake serpy"
     DBT_SNOWFLAKE_USER: ${DBT_SNOWFLAKE_USER}
     DBT_SNOWFLAKE_PASSWORD: ${DBT_SNOWFLAKE_PASSWORD}
     DBT_PROFILES_DIR: /opt/airflow/data_pipeline/profiles
