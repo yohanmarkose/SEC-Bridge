@@ -5,6 +5,7 @@ import json
 from airflow import DAG
 from airflow.operators.dummy import DummyOperator
 from airflow.operators.python import PythonOperator, BranchPythonOperator
+from airflow.providers.snowflake.operators.snowflake import SnowflakeOperator
 from airflow.providers.amazon.aws.hooks.s3 import S3Hook
 from dateutil.relativedelta import relativedelta
 from airflow.models import Variable
@@ -18,6 +19,12 @@ import serpy
 from sec_scraper.scrape import scrape_sec_data
 from sec_scraper.convert_to_parquet import get_ticker_file, parquet_transformer
 
+# Fetch variables from Airflow Variables
+bucket_name = Variable.get("s3_bucket_name")
+AWS_KEY_ID = Variable.get("AWS_KEY_ID")
+AWS_SECRET_KEY = Variable.get("AWS_SECRET_KEY")
+s3_path = f"s3://{bucket_name}"
+
 # Default arguments for the DAG
 default_args = {
     'owner': 'airflow',
@@ -26,7 +33,7 @@ default_args = {
 }
 
 with DAG(
-    dag_id='json_convert_via_parquet_and_print_heads',
+    dag_id='json_convert_via_parquet_and_snowflake_staging',
     default_args=default_args,
     description='Load parquet files into S3 (if needed) and print their head rows',
     schedule_interval=None,
@@ -114,12 +121,15 @@ with DAG(
         s3_hook = S3Hook(aws_conn_id='aws_default')
         bucket_name = Variable.get("s3_bucket_name")
         
-        parquet_files = kwargs['ti'].xcom_pull(task_ids='load_data', key='parquet_files')
+        # Try pulling the parquet_files dictionary from XCom (from load_data or skip_load_data)
+        parquet_files = ti.xcom_pull(task_ids='load_data', key='parquet_files')
         if parquet_files is not None:
             print(f"Using data from 'load_data': {parquet_files}")
         else:
-            parquet_files = kwargs['ti'].xcom_pull(task_ids='skip_load_data', key='parquet_files')
+            parquet_files = ti.xcom_pull(task_ids='skip_load_data', key='parquet_files')
             print(f"Using data from 'skip_load_data': {parquet_files}")
+        
+        # Read sub.parquet and determine the DataFrame length
         if 'sub.parquet' in parquet_files:
             file_obj = s3_hook.get_key(parquet_files['sub.parquet'], bucket_name)
             buffer = BytesIO(file_obj.get()["Body"].read())
@@ -127,23 +137,31 @@ with DAG(
             df_length = len(dfSub)
         else:
             df_length = 0
+            
+        print(f"Total rows in dfSub: {df_length}")
         ti.xcom_push(key='dfSub_length', value=df_length)
 
+
     def compute_range(task_index, num_chunks, **kwargs):
-        """Computes start and end indices for each processing task."""
+        """Computes start and end indices for each processing task and pushes them to XCom."""
         ti = kwargs['ti']
         df_length = ti.xcom_pull(task_ids='get_df_length', key='dfSub_length')
         if df_length is None:
             raise ValueError("dfSub_length XCom value is missing!")
+        
+        # Calculate the chunk size (using integer division)
         chunk_size = df_length // num_chunks
         start_idx = chunk_size * task_index
+        # For the last chunk, ensure it covers the remaining rows
         end_idx = chunk_size * (task_index + 1) if task_index < num_chunks - 1 else df_length
+        
+        print(f"Computed range for task {task_index}: {start_idx} to {end_idx}")
         ti.xcom_push(key=f'process_range_{task_index}', value=(start_idx, end_idx))
 
     def check_s3_files(**kwargs):
         """Check if all required parquet files exist in S3 for the requested year and quarter"""
-        year = '2024'
-        quarter = '4'
+        year = kwargs['dag_run'].conf.get('year')
+        quarter = kwargs['dag_run'].conf.get('quarter')
         bucket_name = Variable.get("s3_bucket_name")
         required_files = ["sub.parquet", "num.parquet", "pre.parquet", "tag.parquet"]
         s3_hook = S3Hook(aws_conn_id='aws_default')
@@ -165,8 +183,8 @@ with DAG(
 
     def load_data(**kwargs):
         """Scrape and load Parquet file paths from S3."""
-        year = '2024'
-        quarter = '4'
+        year = kwargs['dag_run'].conf.get('year')
+        quarter = kwargs['dag_run'].conf.get('quarter')
         parquet_base_path = f"data/{year}/{quarter}/parquet"
         s3_hook = S3Hook(aws_conn_id='aws_default')
         bucket_name = Variable.get("s3_bucket_name")
@@ -191,8 +209,8 @@ with DAG(
 
     def skip_load_data(**kwargs):
         """Generate the S3 paths for existing parquet files."""
-        year = '2024'
-        quarter = '4'
+        year = kwargs['dag_run'].conf.get('year')
+        quarter = kwargs['dag_run'].conf.get('quarter')
         parquet_base_path = f"data/{year}/{quarter}/parquet/"
         s3_hook = S3Hook(aws_conn_id='aws_default')
         bucket_name = Variable.get("s3_bucket_name")
@@ -205,9 +223,11 @@ with DAG(
                 raise Exception(f"Not all required parquet files for {year} Q{quarter} have been loaded!")
         kwargs['ti'].xcom_push(key='parquet_files', value=parquet_files)
 
-    def parquet_to_json(**kwargs):
+    def parquet_to_json(task_index , num_chunks, **kwargs):
         """Read parquet files from S3 and print their head rows."""
         ti = kwargs['ti']
+        year = kwargs['dag_run'].conf.get('year')
+        quarter = kwargs['dag_run'].conf.get('quarter')
         s3_hook = S3Hook(aws_conn_id='aws_default')
         bucket_name = Variable.get("s3_bucket_name")
         parquet_files = ti.xcom_pull(task_ids='load_data', key='parquet_files')
@@ -238,9 +258,22 @@ with DAG(
         dfTag = read_parquet("tag.parquet")
         dfSym = read_parquet("ticker.parquet")
 
-        
-        for subId in range(len(dfSub)):
-            submitted = dfSub.iloc[subId]
+            # Partition dfSub based on the task_index and num_chunks:
+        total_rows = len(dfSub)
+        chunk_size = (total_rows + num_chunks - 1) // num_chunks  # ceiling division
+        start = task_index * chunk_size
+        end = min(start + chunk_size, total_rows)
+        dfSub_chunk = dfSub.iloc[start:end]
+
+        # Pull the computed range for the current task from XCom
+        process_range = ti.xcom_pull(key=f'process_range_{task_index}', task_ids=f'compute_range_{task_index}')
+        if process_range is None:
+            raise ValueError(f"No range computed for task {task_index}")
+        start_idx, end_idx = process_range
+
+        for subId in range(len(dfSub_chunk)):
+            submitted = dfSub_chunk.iloc[subId]
+            print(f"Processing adsh: {submitted['adsh']} for task {task_index}")
             sfDto = SymbolFinancialsDto()
             sfDto.data = FinancialsDataDto()
             sfDto.data.bs = []
@@ -324,8 +357,6 @@ with DAG(
             result = result.replace('\\r', '').replace('\\n', ' ')
             #print(result)
             file_obj = io.BytesIO(result.encode("utf-8"))
-            year='2024'
-            quarter='4'
             filename = submitted["adsh"]+".json"
             s3_key = f"data/{year}/{quarter}/json/{filename}"
             s3_hook.load_file_obj(file_obj=file_obj, bucket_name=bucket_name, key=s3_key, replace=True)
@@ -385,19 +416,85 @@ with DAG(
     # Process rows inside TaskGroup
     with TaskGroup("parallel_processing") as processing_group:
         process_tasks = []
-
         for i in range(num_chunks):
             process_task = PythonOperator(
                 task_id=f'process_rows_{i}',
                 python_callable=parquet_to_json,
-                op_kwargs={'task_index': i},
+                op_kwargs={'task_index': i, 'num_chunks': num_chunks},
                 provide_context=True,
             )
             process_tasks.append(process_task)
+
     
     end_task = DummyOperator(task_id="end")
+
+    # Snowflake-Task 1: Create External Stage in Snowflake
+    create_stage = SnowflakeOperator(
+        task_id='create_stage',
+        snowflake_conn_id='snowflake_v2',
+        sql=f"""
+            USE ROLE dbt_role;
+            CREATE OR REPLACE STAGE sec_json_stage
+            URL='{s3_path}'
+            CREDENTIALS = (
+                AWS_KEY_ID = '{AWS_KEY_ID}',
+                AWS_SECRET_KEY = '{AWS_SECRET_KEY}'
+            );
+        """
+    )
+
+    # Snowflake-Task 2: Create File Format for JSON Files
+    create_fileformat_json = SnowflakeOperator(
+        task_id='create_fileformat_json',
+        snowflake_conn_id='snowflake_v2',
+        sql="""
+            CREATE OR REPLACE FILE FORMAT sec_json_format
+            TYPE = 'JSON';
+        """
+    )
+
+    # Snowflake-Task 3: Create Schema for "json" tables
+    def schema_def_json(**kwargs):
+        year = kwargs['dag_run'].conf.get('year')
+        quarter = kwargs['dag_run'].conf.get('quarter')
+        return f"""
+            CREATE OR REPLACE TABLE SEC_JSON_{year}_{quarter} (
+            json_data VARIANT
+            );
+        """
+    generate_ddl_json = PythonOperator(
+        task_id='generate_ddl_json',
+        python_callable=schema_def_json,
+        provide_context=True,
+    )
+    ddl_json = SnowflakeOperator(
+        task_id='ddl_json',
+        snowflake_conn_id='snowflake_v2',
+        sql="{{ ti.xcom_pull(task_ids='generate_ddl_json') }}"
+    )
+
+    # Snowflake-Task 4: Copy Data from S3 to Snowflake for year and quarter
+    def copyinto_json(**kwargs):
+        year = kwargs['dag_run'].conf.get('year')
+        quarter = kwargs['dag_run'].conf.get('quarter')
+        return f"""
+            COPY INTO SEC_JSON_{year}_{quarter}
+            FROM @sec_json_stage/data/{year}/{quarter}/json/
+            FILE_FORMAT = (TYPE = 'JSON');
+        """
+    generate_copy_sql_json = PythonOperator(
+        task_id='generate_copy_sql_json',
+        python_callable=copyinto_json,
+        provide_context=True,
+    )
+
+    copy_from_s3_json = SnowflakeOperator(
+        task_id='copy_from_s3_json',
+        snowflake_conn_id='snowflake_v2',
+        sql="{{ ti.xcom_pull(task_ids='generate_copy_sql_json') }}"
+    )
 
     # Set task dependencies
     start_task >> check_files_task >> load_decider_task
     load_decider_task >> [load_data_task, skip_load_data_task] >> downstream_tasks
-    downstream_tasks >> length_task >> compute_tasks >> processing_group >> end_task
+    downstream_tasks >> length_task >> compute_tasks >> processing_group >> create_stage >> create_fileformat_json >> generate_ddl_json >> ddl_json >> generate_copy_sql_json >> copy_from_s3_json >> end_task
