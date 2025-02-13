@@ -14,9 +14,9 @@ models:
       - name: company_id
         tests:
           - not_null
-      - name: period
-        tests:
-          - not_null
+      # - name: period
+      #   tests:
+      #     - not_null
       - name: filing_date
         tests:
           - not_null

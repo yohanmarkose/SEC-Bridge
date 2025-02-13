@@ -3,7 +3,7 @@ data_pipeline: # This name should match your project name in dbt_project.yml
   outputs:
     dev:
       type: snowflake
-      account: nbb12463.us-east-1
+      account: ys46011.ca-central-1.aws
 
       # Authentication - using environment variables for security
       user: "{{ env_var('DBT_SNOWFLAKE_USER') }}"
@@ -23,7 +23,7 @@ data_pipeline: # This name should match your project name in dbt_project.yml
 
     prod:
       type: snowflake
-      account: nbb12463.us-east-1
+      account: ys46011.ca-central-1.aws
       user: "{{ env_var('DBT_SNOWFLAKE_USER') }}"
       password: "{{ env_var('DBT_SNOWFLAKE_PASSWORD') }}"
       role: DBT_ROLE
