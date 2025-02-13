@@ -15,7 +15,7 @@ def populate_airflow_page():
     # Input fields for source, year and quarter
     col1, col2, col3 = st.columns(3)
     with col1:
-        source = st.selectbox("Choose Source", ["RAW", "JSON", "FACT Tables"])
+        source = st.selectbox("Choose Source", ["RAW", "JSON", "FACT"])
     with col2:
         year = st.selectbox("Select Year", range(2009, 2025))
     with col3:
@@ -23,6 +23,7 @@ def populate_airflow_page():
     trigger = st.button("Trigger Airflow DAG", use_container_width=True)
     if trigger:
         # Payload for triggering the DAG
+        source = source.lower()
         payload = {
             "conf": {
                 "source": source,
@@ -32,7 +33,7 @@ def populate_airflow_page():
         }
         # Trigger the DAG via Airflow REST API
         response = requests.post(
-            f"{AIRFLOW_API_URL}/api/v1/dags/sec_raw_data_to_snowflake/dagRuns",
+            f"{AIRFLOW_API_URL}/api/v1/dags/sec_{source}_data_to_snowflake/dagRuns",
             json=payload,
             auth=(f"{os.getenv('AIRFLOW_USER')}", f"{os.getenv('AIRFLOW_PASSCODE')}")
         )
