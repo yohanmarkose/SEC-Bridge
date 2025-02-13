@@ -1,5 +1,39 @@
 import pandas as pd
-from io import BytesIO
+from io import BytesIO, StringIO
+
+import requests
+
+def get_ticker_file():
+    """
+    Fetches the SEC ticker file and converts it to a Parquet format.
+    
+    Returns:
+        transformed_files (list): List containing the transformed file name and BytesIO object.
+    """
+    url = "https://www.sec.gov/include/ticker.txt"
+    headers = {"User-Agent": "YourName (your_email@example.com)"}
+    
+    response = requests.get(url, headers=headers)
+    if response.status_code == 200:
+        try:
+            data_frame = pd.read_table(StringIO(response.text), delimiter="\t", header=None, names=["symbol", "cik"])
+            bytes_io = BytesIO()
+            data_frame.to_parquet(
+                bytes_io,
+                index=False,
+                compression="snappy",
+                engine="pyarrow"
+            )
+            bytes_io.seek(0)
+            print("Successfully transformed ticker.txt to ticker.parquet in BytesIO format.")
+            return [("ticker.parquet", bytes_io)]
+        except Exception as e:
+            print(f"Failed to transform ticker.txt: {e}")
+    else:
+        print(f"Failed to fetch data: {response.status_code}")
+    return []
+
+
 
 def parquet_transformer(extracted_files, year, quarter):
     """
