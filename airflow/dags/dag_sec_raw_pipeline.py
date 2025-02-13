@@ -1,5 +1,4 @@
 from io import BytesIO
-import base64
 from airflow.models import Variable
 from airflow import DAG
 from airflow.operators.python import PythonOperator
@@ -21,7 +20,7 @@ default_args = {
     'depends_on_past': False,
     'retries': 1,
 }
- 
+
 # Define the DAG
 with DAG(
     dag_id='sec_raw_data_to_snowflake',

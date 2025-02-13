@@ -1,4 +1,11 @@
+<<<<<<< HEAD
 
 target/
 dbt_packages/
 logs/
+=======
+
+target/
+dbt_packages/
+logs/
+>>>>>>> origin/main

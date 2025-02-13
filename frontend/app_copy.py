@@ -2,45 +2,43 @@ import os, requests
 import streamlit as st
 from streamlit_option_menu import option_menu
 from dotenv import load_dotenv
-import requests
 load_dotenv()
 
 # Airflow API endpoint
 AIRFLOW_API_URL = "http://localhost:8080"
 
-<<<<<<< HEAD
-st.title("SEC Data - Bridge")
+QUERY_API_URL = "http://localhost:8000"
+
+# st.title("US Securities & Exchange Commission - Data Bridge")
 
 
 # # Input fields for year and quarter
-year = st.selectbox("Select Year",("2024","2023","2022","2021","2020","2019","2018","2017"))
-quarter = st.selectbox("Select Quarter", ("1","2","3","4"))
+# year = st.selectbox("Select Year",("2024","2023","2022","2021","2020","2019","2018","2017"))
+# quarter = st.selectbox("Select Quarter", ("1","2","3","4"))
 
-if st.button("Fetch Data"):
-    # Payload for triggering the DAG
-    payload = {
-        "conf": {
-            "year": year,
-            "quarter": quarter
-        }
-    }
-    dag_id = "sec_data_to_s3_scraper" 
-    AIRFLOW_API_URL = f"http://localhost:8080/api/v1/dags/{dag_id}/dagRuns"
+# if st.button("Fetch Data"):
+#     # Payload for triggering the DAG
+#     payload = {
+#         "conf": {
+#             "year": year,
+#             "quarter": quarter
+#         }
+#     }
+    
+#     AIRFLOW_USER = os.getenv("AIRFLOW_USER")
+#     AIRFLOW_PASSCODE = os.getenv("AIRFLOW_PASSCODE")
 
-    # Trigger the DAG via Airflow REST API
-    response = requests.post(
-        AIRFLOW_API_URL,
-        json=payload,
-        auth=(f"{AIRFLOW_USER}", f"{AIRFLOW_PASSCODE}")
-    )
+#     # Trigger the DAG via Airflow REST API
+#     response = requests.post(
+#         AIRFLOW_API_URL,
+#         json=payload,
+#         auth=(f"{AIRFLOW_USER}", f"{AIRFLOW_PASSCODE}")
+#     )
 
-    if response.status_code == 200:
-        st.success("DAG triggered successfully!")
-    else:
-        st.error(f"Failed to trigger DAG: {response.text}")
-=======
-QUERY_API_URL = "http://localhost:8000"
->>>>>>> origin/main
+#     if response.status_code == 200:
+#         st.success("DAG triggered successfully!")
+#     else:
+#         st.error(f"Failed to trigger DAG: {response.text}")
 
 def populate_airflow_page():
     # Display the airflow page
@@ -48,7 +46,7 @@ def populate_airflow_page():
     # Input fields for source, year and quarter
     col1, col2, col3 = st.columns(3)
     with col1:
-        source = st.selectbox("Choose Source", ["RAW", "JSON", "FACT"])
+        source = st.selectbox("Choose Source", ["RAW", "JSON", "FACT Tables"])
     with col2:
         year = st.selectbox("Select Year", range(2009, 2025))
     with col3:
@@ -56,7 +54,6 @@ def populate_airflow_page():
     trigger = st.button("Trigger Airflow DAG", use_container_width=True)
     if trigger:
         # Payload for triggering the DAG
-        source = source.lower()
         payload = {
             "conf": {
                 "source": source,
@@ -66,7 +63,7 @@ def populate_airflow_page():
         }
         # Trigger the DAG via Airflow REST API
         response = requests.post(
-            f"{AIRFLOW_API_URL}/api/v1/dags/sec_{source}_data_to_snowflake/dagRuns",
+            f"{AIRFLOW_API_URL}/api/v1/dags/sec_data_to_s3/dagRuns",
             json=payload,
             auth=(f"{os.getenv('AIRFLOW_USER')}", f"{os.getenv('AIRFLOW_PASSCODE')}")
         )
