@@ -1,5 +1,4 @@
 from io import BytesIO
-import base64
 from airflow.models import Variable
 from airflow import DAG
 from airflow.operators.python import PythonOperator
