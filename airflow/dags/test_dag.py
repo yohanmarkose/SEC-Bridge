@@ -9,7 +9,6 @@ DBT_PROJECT_DIR = "/opt/airflow/data_pipeline"
 #     year = kwargs['dag_run'].conf.get('year')
 #     quarter = kwargs['dag_run'].conf.get('quarter')
 #     return f"""
-
 #     """
 
 year = '2024'

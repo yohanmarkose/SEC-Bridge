@@ -258,7 +258,7 @@ with DAG(
     )
 
 
-   # Task 3: Create Schema for "pre" Table
+# Task 3: Create Schema for "pre" Table
     def schema_def_pre(**kwargs):
         year = kwargs['dag_run'].conf.get('year')
         quarter = kwargs['dag_run'].conf.get('quarter')
