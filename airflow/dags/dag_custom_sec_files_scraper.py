@@ -16,7 +16,7 @@ default_args = {
     'depends_on_past': False,
     'retries': 1,
 }
-
+ 
 # Define the DAG
 with DAG(
     dag_id='sec_data_to_s3_scraper',

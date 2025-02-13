@@ -1,3 +1,4 @@
+
 SELECT
     tag AS tag,
     version as version,

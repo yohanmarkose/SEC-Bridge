@@ -1,0 +1,37 @@
+data_pipeline: # This name should match your project name in dbt_project.yml
+  target: dev # Default target environment
+  outputs:
+    dev:
+      type: snowflake
+      account: nbb12463.us-east-1
+
+      # Authentication - using environment variables for security
+      user: "{{ env_var('DBT_SNOWFLAKE_USER') }}"
+      password: "{{ env_var('DBT_SNOWFLAKE_PASSWORD') }}"
+
+      role: DBT_ROLE
+      database: DBT_DB
+      warehouse: DBT_WH
+      schema: DBT_SCHEMA
+      threads: 10
+      client_session_keep_alive: True
+
+      # Optional but recommended configurations
+      retry_on_database_errors: True
+      retry_all: True
+      connect_retries: 3
+
+    prod:
+      type: snowflake
+      account: nbb12463.us-east-1
+      user: "{{ env_var('DBT_SNOWFLAKE_USER') }}"
+      password: "{{ env_var('DBT_SNOWFLAKE_PASSWORD') }}"
+      role: DBT_ROLE
+      database: DBT_DB
+      warehouse: DBT_WH
+      schema: DBT_SCHEMA
+      threads: 10
+      client_session_keep_alive: True
+      retry_on_database_errors: True
+      retry_all: True
+      connect_retries: 5

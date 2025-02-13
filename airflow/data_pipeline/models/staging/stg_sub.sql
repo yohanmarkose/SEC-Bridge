@@ -1,3 +1,4 @@
+
 SELECT
     adsh AS submission_id,
     TRY_CAST(cik AS NUMBER) AS company_id,
@@ -13,7 +14,7 @@ SELECT
     zipma as mailing_zip,
     TRY_CAST(ein AS NUMBER) as employer_id,
     TRY_TO_DATE(period, 'YYYYMMDD') AS period, 
-    TRY_TO_DATE(filed, 'YYYYMMDD') AS filed,
+    TRY_TO_DATE(filed, 'YYYYMMDD') AS filing_date,
     TRY_CAST(fy AS INTEGER) AS fiscal_year,
     fp AS fiscal_period
 FROM {{ source('sec_source', 'raw_sub') }}

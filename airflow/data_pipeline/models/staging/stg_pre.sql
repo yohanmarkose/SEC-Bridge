@@ -1,3 +1,4 @@
+
 SELECT
     adsh AS submission_id,
     TRY_CAST(report AS NUMBER) AS report,
@@ -8,5 +9,5 @@ SELECT
     tag AS tag,
     version as version,
     plabel AS preferred_label,
-    TRY_CAST(negating AS BOOLEAN) AS negating,
+    TRY_CAST(negating AS BOOLEAN) AS negating
 FROM {{ source('sec_source', 'raw_pre') }}

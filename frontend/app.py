@@ -3,6 +3,7 @@ import boto3
 import streamlit as st
 from streamlit_option_menu import option_menu
 from dotenv import load_dotenv
+import requests
 load_dotenv()
 
 AIRFLOW_USER = os.getenv("AIRFLOW_USER")
@@ -15,8 +16,8 @@ st.title("SEC Data - Bridge")
 
 
 # # Input fields for year and quarter
-# year = st.selectbox("Select Year",("2024","2023","2022","2021","2020","2019","2018","2017"))
-# quarter = st.selectbox("Select Quarter", ("1","2","3","4"))
+year = st.selectbox("Select Year",("2024","2023","2022","2021","2020","2019","2018","2017"))
+quarter = st.selectbox("Select Quarter", ("1","2","3","4"))
 
 if st.button("Fetch Data"):
     # Payload for triggering the DAG
@@ -26,20 +27,20 @@ if st.button("Fetch Data"):
             "quarter": quarter
         }
     }
-    dag_id = "sec_data_to_s3_scraper"
+    dag_id = "sec_data_to_s3_scraper" 
     AIRFLOW_API_URL = f"http://localhost:8080/api/v1/dags/{dag_id}/dagRuns"
 
-#     # Trigger the DAG via Airflow REST API
-#     response = requests.post(
-#         AIRFLOW_API_URL,
-#         json=payload,
-#         auth=(f"{AIRFLOW_USER}", f"{AIRFLOW_PASSCODE}")
-#     )
+    # Trigger the DAG via Airflow REST API
+    response = requests.post(
+        AIRFLOW_API_URL,
+        json=payload,
+        auth=(f"{AIRFLOW_USER}", f"{AIRFLOW_PASSCODE}")
+    )
 
-#     if response.status_code == 200:
-#         st.success("DAG triggered successfully!")
-#     else:
-#         st.error(f"Failed to trigger DAG: {response.text}")
+    if response.status_code == 200:
+        st.success("DAG triggered successfully!")
+    else:
+        st.error(f"Failed to trigger DAG: {response.text}")
 
 def populate_airflow_page():
     # Display the airflow page
