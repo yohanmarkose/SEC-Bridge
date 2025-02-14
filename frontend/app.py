@@ -125,7 +125,7 @@ def populate_query_page():
     # Input fields for source, year and quarter
     col1, col2, col3 = st.columns(3)
     with col1:
-        source = st.selectbox("Choose Source", ["RAW", "JSON", "FACT Tables"])
+        source = st.selectbox("Choose Source", ["RAW", "JSON", "FACT"])
     with col2:
         year = st.selectbox("Select Year", range(2024, 2009,-1))
     with col3:
@@ -148,7 +148,7 @@ def populate_query_page():
         print(st.session_state.table_avail)
         query_executed = check_data_availability(st.session_state.table_avail)
         if query_executed[0]["record_count"] > 0:
-            st.success(f"Data available. Kindly fin the schema for **{source}** below.")
+            st.success(f"Data available. Kindly find the schema for **{source}** below.")
             st.session_state.flag = True
         else:
             st.info(f"No data available for **{source}**, Year: **{year}**, Quarter: **{quarter}**. Trigger the Airflow DAG to fetch data.")
