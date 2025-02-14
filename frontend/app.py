@@ -190,7 +190,7 @@ def generate_check_query(source, year, quarter):
         query_gen = f"SELECT COUNT(*) AS RECORD_COUNT FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA='{os.getenv('SNOWFLAKE_SCHEMA')}' AND TABLE_NAME IN ('STG_NUM_{year}_{quarter}', 'STG_PRE_{year}_{quarter}', 'STG_SUB_{year}_{quarter}', 'STG_TAG_{year}_{quarter}');"
     elif source == "JSON":
         query_gen = f"SELECT COUNT(*) AS RECORD_COUNT FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA='{os.getenv('SNOWFLAKE_SCHEMA')}' AND TABLE_NAME = 'SEC_JSON_{year}_{quarter}';"
-    elif source == "FACT Tables":
+    elif source == "FACT":
         query_gen = f"SELECT COUNT(*) AS RECORD_COUNT FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA='{os.getenv('SNOWFLAKE_SCHEMA')}' AND TABLE_NAME IN ('BALANCE_SHEET', 'CASH_FLOW', 'INCOME_STATEMENT');"
     return(query_gen)
 
