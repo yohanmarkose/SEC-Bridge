@@ -63,7 +63,7 @@ with DAG(
     )
 
     # Task 2: Process the raw sub table
-    def schema_def_sub(**kwargs):
+    def table_def_sub(**kwargs):
         year = kwargs['dag_run'].conf.get('year')
         quarter = kwargs['dag_run'].conf.get('quarter')
         return f"""
