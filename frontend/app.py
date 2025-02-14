@@ -148,13 +148,11 @@ def populate_query_page():
         print(st.session_state.table_avail)
         query_executed = check_data_availability(st.session_state.table_avail)
         if query_executed[0]["record_count"] > 0:
-            st.success(f"Data is available for **{source}**, Year: **{year}**, Quarter: **{quarter}**.")
+            st.success(f"Data available. Kindly fin the schema for **{source}** below.")
             st.session_state.flag = True
         else:
             st.info(f"No data available for **{source}**, Year: **{year}**, Quarter: **{quarter}**. Trigger the Airflow DAG to fetch data.")
-        # st.write("Query Results:")
-        # st.dataframe(query_executed)
-        # st.success(f"Query executed successfully.")
+
     # Show query input only if data is available
     if st.session_state.flag:
         
@@ -193,7 +191,7 @@ def generate_check_query(source, year, quarter):
     elif source == "JSON":
         query_gen = f"SELECT COUNT(*) AS RECORD_COUNT FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA='{os.getenv('SNOWFLAKE_SCHEMA')}' AND TABLE_NAME = 'SEC_JSON_{year}_{quarter}';"
     elif source == "FACT Tables":
-        query_gen = f"SELECT COUNT(*) AS RECORD_COUNT FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA='{os.getenv('SNOWFLAKE_SCHEMA')}' AND TABLE_NAME IN ('FACT_BS_{year}_{quarter}', 'FACT_CF_{year}_{quarter}', 'FACT_IS_{year}_{quarter}');"
+        query_gen = f"SELECT COUNT(*) AS RECORD_COUNT FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA='{os.getenv('SNOWFLAKE_SCHEMA')}' AND TABLE_NAME IN ('BALANCE_SHEET', 'CASH_FLOW', 'INCOME_STATEMENT');"
     return(query_gen)
 
 def check_data_availability(query):
@@ -212,7 +210,7 @@ def check_data_availability(query):
                     st.write("No data returned for the given query.")
             else:
                 # Handle errors from the API
-                st.error(f"Error: {response.status_code} - {response.text}")
+                st.write("No data returned for the given query. Please check the query.")
         except Exception as e:
             # Handle connection or other exceptions
             st.error(f"An error occurred: {e}")
