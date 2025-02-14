@@ -6,7 +6,7 @@ import requests
 load_dotenv()
 
 # Airflow API endpoint
-AIRFLOW_API_URL = "http://localhost:8080"
+AIRFLOW_API_URL = "http://34.171.240.161:8080"
 QUERY_API_URL = "https://fastapi-service-7ss2sa6dka-uc.a.run.app"
 
 def populate_airflow_page():
