@@ -5,7 +5,6 @@ output.log
 *.pyc
 *.pyo% 
 *.json
-*.txt
 *.DS_Store
 readme.htm
 logs
