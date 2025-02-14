@@ -3,12 +3,12 @@ numpy
 pandas
 fastapi
 uvicorn
-bs4
 requests
 boto3
-datetime
 pydantic
 pathlib
-logging
-apache-airflow
+python-dotenv
+sqlalchemy
+snowflake-sqlalchemy
 apache-airflow-providers-snowflake
+apache-airflow-providers-amazon
