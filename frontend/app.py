@@ -1,46 +1,41 @@
 import os, requests
 import streamlit as st
 from streamlit_option_menu import option_menu
+import boto3
 from dotenv import load_dotenv
-import requests
 load_dotenv()
 
+# def trigger_mwaa_dag(tag_id):
+#     client = boto3.client(
+#         'mwaa',
+#         aws_access_key_id=os.getenv("AWS_USER_ACCESS_KEY"),
+#         aws_secret_access_key=os.getenv("AWS_USER_SECRET_KEY"),
+#         region_name=os.getenv("AWS_REGION")
+#     )
+#     try:
+#         # Generate short-lived CLI token
+#         token = client.create_cli_token(Name=os.getenv("AWS_ENVIRONMENT"))
+       
+#         # Construct URL from your provided web server hostname (optional)
+#         url = f"https://{token['WebServerHostname']}/aws_mwaa/cli"
+       
+#         # Send trigger command
+#         response = requests.post(
+#             url,
+#             headers={
+#                 "Authorization": f"Bearer {token['CliToken']}",
+#                 "Content-Type": "text/plain"
+#             },
+#             data=f"dags trigger {tag_id}"
+#         )
+#         return response.status_code
+#     except Exception as e:
+#         return str(e)
+
 # Airflow API endpoint
-AIRFLOW_API_URL = "http://localhost:8080"
+AIRFLOW_API_URL = "https://ebaeb7d6-905a-429f-8719-9ff6a3c16313.c67.us-east-1.airflow.amazonaws.com/api/v1/dags"
 
-<<<<<<< HEAD
-st.title("SEC Data - Bridge")
-
-
-# # Input fields for year and quarter
-year = st.selectbox("Select Year",("2024","2023","2022","2021","2020","2019","2018","2017"))
-quarter = st.selectbox("Select Quarter", ("1","2","3","4"))
-
-if st.button("Fetch Data"):
-    # Payload for triggering the DAG
-    payload = {
-        "conf": {
-            "year": year,
-            "quarter": quarter
-        }
-    }
-    dag_id = "sec_data_to_s3_scraper" 
-    AIRFLOW_API_URL = f"http://localhost:8080/api/v1/dags/{dag_id}/dagRuns"
-
-    # Trigger the DAG via Airflow REST API
-    response = requests.post(
-        AIRFLOW_API_URL,
-        json=payload,
-        auth=(f"{AIRFLOW_USER}", f"{AIRFLOW_PASSCODE}")
-    )
-
-    if response.status_code == 200:
-        st.success("DAG triggered successfully!")
-    else:
-        st.error(f"Failed to trigger DAG: {response.text}")
-=======
 QUERY_API_URL = "http://localhost:8000"
->>>>>>> origin/main
 
 def populate_airflow_page():
     # Display the airflow page
@@ -48,32 +43,46 @@ def populate_airflow_page():
     # Input fields for source, year and quarter
     col1, col2, col3 = st.columns(3)
     with col1:
-        source = st.selectbox("Choose Source", ["RAW", "JSON", "FACT"])
+        source = st.selectbox("Choose Source", ["RAW", "JSON", "FACT Tables"])
     with col2:
-        year = st.selectbox("Select Year", range(2009, 2025))
+        year = st.selectbox("Select Year", range(2024, 2020, -1))
     with col3:
         quarter = st.selectbox("Select Quarter", ("Q1","Q2","Q3","Q4"))
     trigger = st.button("Trigger Airflow DAG", use_container_width=True)
     if trigger:
-        # Payload for triggering the DAG
-        source = source.lower()
-        payload = {
-            "conf": {
-                "source": source,
-                "year": year,
-                "quarter": quarter
-            }
-        }
-        # Trigger the DAG via Airflow REST API
-        response = requests.post(
-            f"{AIRFLOW_API_URL}/api/v1/dags/sec_{source}_data_to_snowflake/dagRuns",
-            json=payload,
-            auth=(f"{os.getenv('AIRFLOW_USER')}", f"{os.getenv('AIRFLOW_PASSCODE')}")
-        )
-        if response.status_code == 200:
-            st.success("DAG triggered successfully!")
-        else:
-            st.error(f"Failed to trigger DAG: {response.text}")
+        try:
+            # Generate short-lived CLI token for MWAA
+            client = boto3.client(
+                'mwaa',
+                aws_access_key_id=os.getenv("AWS_USER_ACCESS_KEY"),
+                aws_secret_access_key=os.getenv("AWS_USER_SECRET_KEY"),
+                region_name=os.getenv("AWS_REGION")
+            )
+            
+            token = client.create_cli_token(Name=os.getenv("AWS_ENVIRONMENT"))
+            
+            # Construct the MWAA CLI endpoint URL
+            url = f"https://{token['WebServerHostname']}/aws_mwaa/cli"
+            dag_id = f"sec_{source}_data_to_snowflake"  
+            payload = f"dags trigger {dag_id} -c '{{\"source\": \"{source}\", \"year\": \"{year}\", \"quarter\": \"{quarter}\"}}'"
+            
+            response = requests.post(
+                url,
+                headers={
+                    "Authorization": f"Bearer {token['CliToken']}",
+                    "Content-Type": "text/plain"
+                },
+                data=payload
+            )
+            
+            if response.status_code == 200:
+                st.success("DAG triggered successfully!")
+                st.success(response.)
+            else:
+                st.error(f"Failed to trigger DAG: {response.text}")
+        
+        except Exception as e:
+            st.error(f"An error occurred: {str(e)}")
     
 def populate_query_page():
     # Display the query page
