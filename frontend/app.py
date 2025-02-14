@@ -3,44 +3,13 @@ import streamlit as st
 from streamlit_option_menu import option_menu
 from dotenv import load_dotenv
 import requests
+import pandas as pd
 load_dotenv()
 
 # Airflow API endpoint
 AIRFLOW_API_URL = "http://localhost:8080"
 
-<<<<<<< HEAD
-st.title("SEC Data - Bridge")
-
-
-# # Input fields for year and quarter
-year = st.selectbox("Select Year",("2024","2023","2022","2021","2020","2019","2018","2017"))
-quarter = st.selectbox("Select Quarter", ("1","2","3","4"))
-
-if st.button("Fetch Data"):
-    # Payload for triggering the DAG
-    payload = {
-        "conf": {
-            "year": year,
-            "quarter": quarter
-        }
-    }
-    dag_id = "sec_data_to_s3_scraper" 
-    AIRFLOW_API_URL = f"http://localhost:8080/api/v1/dags/{dag_id}/dagRuns"
-
-    # Trigger the DAG via Airflow REST API
-    response = requests.post(
-        AIRFLOW_API_URL,
-        json=payload,
-        auth=(f"{AIRFLOW_USER}", f"{AIRFLOW_PASSCODE}")
-    )
-
-    if response.status_code == 200:
-        st.success("DAG triggered successfully!")
-    else:
-        st.error(f"Failed to trigger DAG: {response.text}")
-=======
 QUERY_API_URL = "http://localhost:8000"
->>>>>>> origin/main
 
 def populate_airflow_page():
     # Display the airflow page
@@ -76,6 +45,7 @@ def populate_airflow_page():
             st.error(f"Failed to trigger DAG: {response.text}")
     
 def populate_query_page():
+    
     # Display the query page
     st.subheader("Query Snowflake")
 
@@ -96,7 +66,8 @@ def populate_query_page():
         year = st.selectbox("Select Year", range(2009, 2025))
     with col3:
         quarter = st.selectbox("Select Quarter", ("Q1","Q2","Q3","Q4"))
-        
+    
+
     # Check if any of the inputs have changed
     current_inputs = {"source": source, "year": year, "quarter": quarter}
     if current_inputs != st.session_state.prev_inputs:
@@ -109,13 +80,14 @@ def populate_query_page():
     # Handle data availability logic
     if avail:
         # st.session_state.flag = check_data_availability(source, year, quarter)
-        # Execute the query
+        # Execute the query 
         st.session_state.table_avail = generate_check_query(source, year, quarter)
         print(st.session_state.table_avail)
         query_executed = check_data_availability(st.session_state.table_avail)
         if query_executed[0]["record_count"] > 0:
             st.success(f"Data is available for **{source}**, Year: **{year}**, Quarter: **{quarter}**.")
             st.session_state.flag = True
+
         else:
             st.info(f"No data available for **{source}**, Year: **{year}**, Quarter: **{quarter}**. Trigger the Airflow DAG to fetch data.")
         st.write("Query Results:")
