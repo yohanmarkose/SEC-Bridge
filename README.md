@@ -18,13 +18,15 @@ WE ATTEST THAT WE HAVEN’T USED ANY OTHER STUDENTS’ WORK IN OUR ASSIGNMENT AN
 
 ## Resources
 
-Application: [Streamlit Deployment](https://webpdfdataextractiontool.streamlit.app/)
+Streamlit Application: [Streamlit App](https://secbridge.streamlit.app/)
 
-Backend API: [Google Cloud Run](https://fastapi-service-rhtrkfwlfq-uc.a.run.app/docs)
+Backend API: [Google Cloud Run](https://fastapi-service-7ss2sa6dka-uc.a.run.app/docs)
 
-Google Codelab: [Codelab](https://codelabs-preview.appspot.com/?file_id=1xwrkjouN6SqtHA2sCEjKclfBJKb0yfX7YK_DwzOorpM#0)
+Airflow API: [Airflow](http://34.171.240.161:8080)
 
-Google Docs: [Project Document](https://docs.google.com/document/d/1xwrkjouN6SqtHA2sCEjKclfBJKb0yfX7YK_DwzOorpM/edit?usp=sharing)
+Google Codelab: [Codelab](https://codelabs-preview.appspot.com/?file_id=1G_vUq91SMNNV23FcLGJ1ADARpDVSipgqq67Mxie8pJI/edit?tab=t.0#1)
+
+Google Docs: [Project Document](https://docs.google.com/document/d/1G_vUq91SMNNV23FcLGJ1ADARpDVSipgqq67Mxie8pJI/edit?tab=t.0)
 
 Video Walkthrough: [Video](https://drive.google.com/file/d/1gRAybJijrtRXynX8-bh1Lo14EUulq4xh/view?usp=sharing)
 
