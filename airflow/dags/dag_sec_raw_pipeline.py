@@ -23,7 +23,7 @@ default_args = {
 
 # Define the DAG
 with DAG(
-    dag_id='sec_raw_data_to_snowflake_v1',
+    dag_id='sec_raw_data_to_snowflake',
     default_args=default_args,
     tags=['sec_datapipelines'],
     description='Extract SEC financial data, transform it, and load into S3',

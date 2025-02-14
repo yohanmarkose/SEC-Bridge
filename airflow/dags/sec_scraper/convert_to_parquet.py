@@ -11,7 +11,7 @@ def get_ticker_file():
         transformed_files (list): List containing the transformed file name and BytesIO object.
     """
     url = "https://www.sec.gov/include/ticker.txt"
-    headers = {"User-Agent": "YourName (your_email@example.com)"}
+    headers = {"User-Agent": "email@example.com)"}
     
     response = requests.get(url, headers=headers)
     if response.status_code == 200:
@@ -62,13 +62,13 @@ def parquet_transformer(extracted_files, year, quarter):
                 categorical_columns = ["tag", "version", "uom", "segments", "form", "stmt"]
                 for col in categorical_columns:
                     if col in data_frame.columns:
-                        data_frame[col] = data_frame[col].astype("category")  # Convert to Pandas category type
+                        data_frame[col] = data_frame[col].astype("category")
                 bytes_io = BytesIO()
                 data_frame.to_parquet(
                     bytes_io,
                     index=False,
                     compression="snappy",
-                    engine="pyarrow"       # Use PyArrow for better compatibility with Snowflake
+                    engine="pyarrow"      
                 )
                 
                 bytes_io.seek(0)  # Reset pointer for further use
