@@ -3,12 +3,79 @@ import streamlit as st
 from streamlit_option_menu import option_menu
 from dotenv import load_dotenv
 import requests
+import pandas as pd
+
 load_dotenv()
 
 # Airflow API endpoint
 AIRFLOW_API_URL = "http://34.171.240.161:8080"
 QUERY_API_URL = "https://fastapi-service-7ss2sa6dka-uc.a.run.app"
 
+def populate_schema(source, year, quarter):
+    SCHEMAS = {}
+    if source == "FACT":
+        SCHEMAS = {
+            "Balance_Sheet": [
+                "COMPANY_NAME", "COMPANY_ID", "FILING_DATE", "PERIOD",
+                "FISCAL_YEAR", "FISCAL_PERIOD", "UNIT", "PREFERRED_LABEL",
+                "TOTAL_REPORTED_AMOUNT", "TAG", "DATATYPE", "DOCUMENTATION"
+            ],
+            "Cash_Flow": [
+                "COMPANY_NAME", "COMPANY_ID", "FILING_DATE", "PERIOD",
+                "FISCAL_YEAR", "FISCAL_PERIOD", "UNIT", "PREFERRED_LABEL",
+                "TOTAL_REPORTED_AMOUNT", "TAG", "DATATYPE", "DOCUMENTATION"
+            ],
+            "Income_Statement": [
+                "COMPANY_NAME", "COMPANY_ID", "FILING_DATE", "PERIOD",
+                "FISCAL_YEAR", "FISCAL_PERIOD", "UNIT", "PREFERRED_LABEL",
+                "TOTAL_REPORTED_AMOUNT", "TAG", "DATATYPE", "DOCUMENTATION"
+            ]
+            }
+    elif source == "RAW":
+        SCHEMAS = {
+                    f"STG_NUM_{year}_{quarter}": [
+                        "SUBMISSION_ID", "TAG", "VERSION", "PERIOD_END_DATE",
+                        "NUM_QUATERS_COVERED", "UNIT", "SEGMENTS", "COREG",
+                        "REPORTED_AMOUNT", "FOOTNOTE"
+                    ],
+                    f"STG_PRE_{year}_{quarter}": [
+                        "SUBMISSION_ID", "REPORT", "LINE", "STATEMENT_TYPE",
+                        "DIRECTLY_REPORTED", "RFILE", "TAG", "VERSION",
+                        "PREFERRED_LABEL", "NEGATING"
+                    ],
+                    f"STG_SUB_{year}_{quarter}": [
+                        "SUBMISSION_ID", "COMPANY_ID", "COMPANY_NAME", "SIC_CODE",
+                        "BUSINESS_COUNTRY", "BUSINESS_STATE", "BUSINESS_CITY",
+                        "BUSINESS_ZIP", "BUSINESS_ADD_1", "BUSINESS_ADD_2",
+                        "BUSINESS_PH_NO", "MAILING_COUNTRY", "MAILING_STATE",
+                        "MAILING_CITY", "MAILING_ZIP", "REGISTRANT_MAIL_ADD_1",
+                        "REGISTRANT_MAIL_ADD_2", "COUNTRYINC", "STATE_PROV_INC",
+                        "EMPLOYER_ID", "FORMER", "CHANGED", "AFS", "WKSI", "FYE",
+                        "FORM", "PERIOD", "FILING_DATE", "FISCAL_YEAR", "FISCAL_PERIOD",
+                        "ACCEPTED", "PREVRPT", "DETAIL", "INSTANCE", "NCIKS", "ACIKS"
+                    ],
+                    f"STG_TAG_{year}_{quarter}": [
+                        "TAG", "VERSION", "CUSTOM", "ABSTRACT", "DATATYPE",
+                        "ITEM_ORDER", "BALANCE_TYPE", "TAG_LABEL", "DOCUMENTATION"
+                    ]
+                }
+    else:
+        SCHEMAS = {
+                    f"SEC_JSON_{year}_{quarter}": ["JSON_DATA"]
+                }
+    selected_schema = st.selectbox(
+            "Choose Table:",
+            options=list(SCHEMAS.keys())
+            )
+    schema_df = pd.DataFrame({
+    f"{selected_schema}": SCHEMAS[selected_schema]
+    })
+    st.write(f"**{selected_schema} Schema:**")
+    st.dataframe(schema_df, use_container_width=True, hide_index=True)
+    schema_df = pd.DataFrame({
+    f"{selected_schema}": SCHEMAS[selected_schema]
+    })
+    
 def populate_airflow_page():
     # Display the airflow page
     st.subheader("Trigger Airflow DAGs")
@@ -85,11 +152,16 @@ def populate_query_page():
             st.session_state.flag = True
         else:
             st.info(f"No data available for **{source}**, Year: **{year}**, Quarter: **{quarter}**. Trigger the Airflow DAG to fetch data.")
-        st.write("Query Results:")
-        st.dataframe(query_executed)
-        st.success(f"Query executed successfully.")
+        # st.write("Query Results:")
+        # st.dataframe(query_executed)
+        # st.success(f"Query executed successfully.")
     # Show query input only if data is available
     if st.session_state.flag:
+        
+        # Insert Schema Function here
+        
+        populate_schema(source, year, quarter)
+        
         # Text area for query input (persistent using session state)
         st.session_state.query = st.text_area(
             "Enter your query here:", 
@@ -117,7 +189,7 @@ def generate_check_query(source, year, quarter):
     # SELECT COUNT(*) AS RECORD_COUNT FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA='DBT_SCHEMA' AND TABLE_NAME = 'SEC_JSON_2024_Q1';
     # SELECT COUNT(*) AS RECORD_COUNT FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA='DBT_SCHEMA' AND TABLE_NAME IN ('FACT_BS_2024_Q1', 'FACT_CF_2024_Q1', 'FACT_IS_2024_Q1');
     if source == "RAW":
-        query_gen = f"SELECT COUNT(*) AS RECORD_COUNT FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA='{os.getenv('SNOWFLAKE_SCHEMA')}' AND TABLE_NAME IN ('NUM_{year}_{quarter}', 'PRE_{year}_{quarter}', 'SUB_{year}_{quarter}', 'TAG_{year}_{quarter}');"
+        query_gen = f"SELECT COUNT(*) AS RECORD_COUNT FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA='{os.getenv('SNOWFLAKE_SCHEMA')}' AND TABLE_NAME IN ('STG_NUM_{year}_{quarter}', 'STG_PRE_{year}_{quarter}', 'STG_SUB_{year}_{quarter}', 'STG_TAG_{year}_{quarter}');"
     elif source == "JSON":
         query_gen = f"SELECT COUNT(*) AS RECORD_COUNT FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA='{os.getenv('SNOWFLAKE_SCHEMA')}' AND TABLE_NAME = 'SEC_JSON_{year}_{quarter}';"
     elif source == "FACT Tables":
