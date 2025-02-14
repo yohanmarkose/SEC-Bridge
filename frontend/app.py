@@ -17,7 +17,7 @@ def populate_airflow_page():
     with col1:
         source = st.selectbox("Choose Source", ["RAW", "JSON", "FACT"])
     with col2:
-        year = st.selectbox("Select Year", range(2009, 2025))
+        year = st.selectbox("Select Year", range(2024, 2009,-1))
     with col3:
         quarter = st.selectbox("Select Quarter", ("Q1","Q2","Q3","Q4"))
     trigger = st.button("Trigger Airflow DAG", use_container_width=True)
@@ -60,7 +60,7 @@ def populate_query_page():
     with col1:
         source = st.selectbox("Choose Source", ["RAW", "JSON", "FACT Tables"])
     with col2:
-        year = st.selectbox("Select Year", range(2009, 2025))
+        year = st.selectbox("Select Year", range(2024, 2009,-1))
     with col3:
         quarter = st.selectbox("Select Quarter", ("Q1","Q2","Q3","Q4"))
         
