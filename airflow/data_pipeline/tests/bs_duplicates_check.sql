@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 SELECT 
     COMPANY_NAME, 
     COMPANY_ID, 
@@ -27,34 +26,4 @@ GROUP BY
     TAG,
     DATATYPE, 
     DOCUMENTATION
-=======
-SELECT 
-    COMPANY_NAME, 
-    COMPANY_ID, 
-    FILING_DATE, 
-    PERIOD, 
-    FISCAL_YEAR, 
-    FISCAL_PERIOD, 
-    UNIT, 
-    PREFERRED_LABEL, 
-    TOTAL_REPORTED_AMOUNT, 
-    TAG, 
-    DATATYPE, 
-    DOCUMENTATION, 
-    COUNT(*) AS duplicate_count
-FROM {{ ref('balance_sheet') }}
-GROUP BY 
-    COMPANY_NAME,
-    COMPANY_ID,
-    FILING_DATE,
-    PERIOD,
-    FISCAL_YEAR,
-    FISCAL_PERIOD,
-    UNIT,
-    PREFERRED_LABEL,
-    TOTAL_REPORTED_AMOUNT,
-    TAG,
-    DATATYPE, 
-    DOCUMENTATION
->>>>>>> origin/main
 HAVING COUNT(*) > 1

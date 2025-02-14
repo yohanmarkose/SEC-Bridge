@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 version: 2
 
 sources:
@@ -14,20 +13,3 @@ sources:
         description: Raw data from SEC presentation file
       - name: raw_tag
         description: Raw data from SEC financial tags file
-=======
-version: 2
-
-sources:
-  - name: sec_source
-    database: dbt_db
-    schema: dbt_schema
-    tables:
-      - name: raw_sub
-        description: Raw data from SEC submission file
-      - name: raw_num
-        description: Raw data from SEC numeric financial data file
-      - name: raw_pre
-        description: Raw data from SEC presentation file
-      - name: raw_tag
-        description: Raw data from SEC financial tags file
->>>>>>> origin/main
