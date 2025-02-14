@@ -12,3 +12,5 @@ pathlib
 logging
 apache-airflow
 apache-airflow-providers-snowflake
+dbt-core
+dbt-snowflake
