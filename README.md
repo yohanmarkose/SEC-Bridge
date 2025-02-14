@@ -28,7 +28,7 @@ Google Codelab: [Codelab](https://codelabs-preview.appspot.com/?file_id=1G_vUq91
 
 Google Docs: [Project Document](https://docs.google.com/document/d/1G_vUq91SMNNV23FcLGJ1ADARpDVSipgqq67Mxie8pJI/edit?tab=t.0)
 
-Video Walkthrough: [Video](https://drive.google.com/file/d/1gRAybJijrtRXynX8-bh1Lo14EUulq4xh/view?usp=sharing)
+Video Walkthrough: [Video](https://drive.google.com/file/d/16XDbPIdi6c4UuNQVmjm6gx3oNwx6czK7/view?usp=sharing)
 
 ## Technologies Used
 
