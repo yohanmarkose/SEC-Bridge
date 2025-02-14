@@ -95,9 +95,12 @@ cd DAMG7245_Assignment02
 python -m venv venvsource venv/bin/activate
 pip install -r requirements.txt
 ```
-### Seting Up Airflow
+### Setting Up Airflow
 
-Create a new directory for your Airflow setup and navigate into it:
+Go inside the airflow directorydocker compose up -d
+```
+docker compose up -d
+```
 
 ### 3. AWS S3 Setup
 
