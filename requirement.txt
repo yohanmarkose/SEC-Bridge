@@ -12,3 +12,4 @@ sqlalchemy
 snowflake-sqlalchemy
 apache-airflow-providers-snowflake
 apache-airflow-providers-amazon
+logging
