@@ -5,9 +5,10 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # Airflow API endpoint
+# AIRFLOW_API_URL = "https://ebaeb7d6-905a-429f-8719-9ff6a3c16313.c67.us-east-1.airflow.amazonaws.com"
 AIRFLOW_API_URL = "http://localhost:8080"
 
-QUERY_API_URL = "http://localhost:8000"
+QUERY_API_URL = "https://fastapi-service-7ss2sa6dka-uc.a.run.app"
 
 def populate_airflow_page():
     # Display the airflow page
@@ -85,9 +86,9 @@ def populate_query_page():
             st.session_state.flag = True
         else:
             st.info(f"No data available for **{source}**, Year: **{year}**, Quarter: **{quarter}**. Trigger the Airflow DAG to fetch data.")
-        st.write("Query Results:")
-        st.dataframe(query_executed)
-        st.success(f"Query executed successfully.")
+        # st.write("Query Results:")
+        # st.dataframe(query_executed)
+        # st.success(f"Query executed successfully.")
     # Show query input only if data is available
     if st.session_state.flag:
         # Text area for query input (persistent using session state)
