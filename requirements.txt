@@ -11,6 +11,7 @@ datetime
 pydantic
 pathlib
 logging
+python-dotenv
 apache-airflow
 apache-airflow-providers-snowflake
 dbt-core

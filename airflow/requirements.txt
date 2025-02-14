@@ -1,0 +1,12 @@
+pyarrow
+dbt-core
+dbt-snowflake
+boto3
+sqlalchemy
+snowflake-sqlalchemy
+apache-airflow-providers-amazon
+apache-airflow-providers-snowflake
+marshmallow
+numpy
+pandas
+requests
