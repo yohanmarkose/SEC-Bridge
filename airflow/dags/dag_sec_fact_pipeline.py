@@ -25,16 +25,6 @@ default_args = {
 DBT_PROFILE_DIR = "/opt/airflow/data_pipeline/profiles"
 DBT_PROJECT_DIR = "/opt/airflow/data_pipeline"
 
-# def dbt_get_year_quarter(**kwargs):
-#     year = kwargs['dag_run'].conf.get('year')
-#     quarter = kwargs['dag_run'].conf.get('quarter')
-#     return f"""
-
-#     """
-
-# year = '2024'
-# quarter='4'
-
 with DAG(
     dag_id='sec_fact_data_to_snowflake',
     start_date=datetime(2025, 2, 1),
@@ -178,8 +168,6 @@ with DAG(
         ti = kwargs['ti']
         year = ti.xcom_pull(task_ids='scrape_sec_data', key='year')
         quarter = ti.xcom_pull(task_ids='scrape_sec_data', key='quarter')
-        # year = kwargs['dag_run'].conf.get('year')
-        # quarter = kwargs['dag_run'].conf.get('quarter')
         return f"""
             COPY INTO raw_sub
             FROM @sec_s3_stage_csv/data/{year}/{quarter}/csv/sub.csv
