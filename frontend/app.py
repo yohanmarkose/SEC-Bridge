@@ -8,7 +8,7 @@ import pandas as pd
 load_dotenv()
 
 # Airflow API endpoint
-AIRFLOW_API_URL = "http://34.171.240.161:8080"
+AIRFLOW_API_URL = "http://35.209.49.151:8080"
 QUERY_API_URL = "https://fastapi-service-7ss2sa6dka-uc.a.run.app"
 
 def populate_schema(source, year, quarter):
