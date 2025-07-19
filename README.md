@@ -6,12 +6,6 @@ Emphasizing financial data processing and pipeline automation
 
 EC-Bridge is a financial data pipeline and analysis system designed to extract, transform, and validate SEC financial statement data efficiently. The project aims to support analysts conducting fundamental analysis of US public companies by building a robust, scalable, and structured financial database using Snowflake, Airflow, FastAPI, and Streamlit.
 
-## Team Members
-
-- Vedant Mane
-- Abhinav Gangurde
-- Yohan Markose
-
 ## Attestation:
 
 WE ATTEST THAT WE HAVEN’T USED ANY OTHER STUDENTS’ WORK IN OUR ASSIGNMENT AND ABIDE BY THE POLICIES LISTED IN THE STUDENT HANDBOOK
@@ -30,6 +24,10 @@ Google Docs: [Project Document](https://docs.google.com/document/d/1G_vUq91SMNNV
 
 Video Walkthrough: [Video](https://drive.google.com/file/d/16XDbPIdi6c4UuNQVmjm6gx3oNwx6czK7/view?usp=sharing)
 
+## Application Workflow Diagram
+
+![Application Workflow Diagram](data_stream.png)
+
 ## Technologies Used
 
 - **Streamlit**: Frontend Framework
@@ -40,10 +38,6 @@ Video Walkthrough: [Video](https://drive.google.com/file/d/16XDbPIdi6c4UuNQVmjm6
 - **ELT & Pipeline**: Apache Airflow
 - **Programming**: Python, SQL, JSON Transformation
 - **Validation & Testing**: DBT (Data Built Tool)
-
-## Application Workflow Diagram
-
-![Application Workflow Diagram](data_stream.png)
 
 ### Workflow
 ### 1. Initial User Input
